@@ -248,7 +248,8 @@ The script above will take a few minutes to create VMSS and related resources. O
       ```bash
       # Navigate back to the parent directory, where you have the docker-compose.yaml file present. 
       cd ..
-      # Create images, and run the application locally using Docker.
+      #### With Mac M1 Prod using linux/amd64:
+      export DOCKER_DEFAULT_PLATFORM=linux/amd64
       docker-compose up -d --build
       # View the application at http://localhost:8080/
       # You will see two new images - "azure-vote-front:v1" and "mcr.microsoft.com/oss/bitnami/redis:6.0.8" (built from "redis:6.0.8")
@@ -257,16 +258,13 @@ The script above will take a few minutes to create VMSS and related resources. O
       docker ps
       # Stop the application
       docker-compose down
-      ```
-      Troubleshoot: if you wish to log into the container and see its content, you can use:
-      ```bash
       # Check if the frontend application is up and running 
       docker exec -it azure-vote-front bash
       ls
+      ## exit
       # Check if the Redis server is running
       docker exec -it azure-vote-back bash
       redis-cli ping
-      ```
 
 5. Once your aplication is running successfully in the multi-container environment locally, prepare to push the (frontend) image to the ACR. Create the AKS cluster:
       ```bash
@@ -276,39 +274,38 @@ The script above will take a few minutes to create VMSS and related resources. O
       cd nd081-c4-azure-performance-project-starter
       # Assuming the acdnd-c4-project resource group is still avaiable with you
       chmod +x create-cluster.sh
-      # The script below will create an AKS cluster, Configure kubectl to connect to your Kubernetes cluster, and Verify the connection to your cluster
       ./create-cluster.sh
       ```
 
-6. Next, create a Container Registry in Azure to store the image, and AKS can later pull them during deployment to the AKS cluster. Feel free to change the ACR name in place of `myacr202106` below.
+6. Next, create a Container Registry in Azure to store the image, and AKS can later pull them during deployment to the AKS cluster. Feel free to change the ACR name in place of `ACR-2024-DEC` below.
       ```bash
       # Assuming the acdnd-c4-project resource group is still avaiable with you
       # Create a resource group
       az group create --name acdnd-c4-project --location westus2
       # ACR name should not have upper case letter
-      az acr create --resource-group acdnd-c4-project --name myacr202106 --sku Basic
+      az acr create --resource-group acdnd-c4-project --name ACR-2024-DEC --sku Basic
       # Log in to the ACR
-      az acr login --name myacr202106
+      az acr login --name ACR-2024-DEC
       # Get the ACR login server name
       # To use the azure-vote-front container image with ACR, the image needs to be tagged with the login server address of your registry. 
       # Find the login server address of your registry
-      az acr show --name myacr202106 --query loginServer --output table
+      az acr show --name ACR-2024-DEC --query loginServer --output table
       # Associate a tag to the local image. You can use a different tag (say v2, v3, v4, ....) everytime you edit the underlying image. 
-      docker tag azure-vote-front:v1 myacr202106.azurecr.io/azure-vote-front:v1
-      # Now you will see myacr202106.azurecr.io/azure-vote-front:v1 if you run docker images
+      docker tag azure-vote-front:v1 ACR-2024-DEC.azurecr.io/azure-vote-front:v1
+      # Now you will see ACR-2024-DEC.azurecr.io/azure-vote-front:v1 if you run docker images
       # Push the local registry to remote ACR
-      docker push myacr202106.azurecr.io/azure-vote-front:v1
+      docker push ACR-2024-DEC.azurecr.io/azure-vote-front:v1
       # Verify if you image is up in the cloud.
-      az acr repository list --name myacr202106 --output table
+      az acr repository list --name ACR-2024-DEC --output table
       # Associate the AKS cluster with the ACR repository
-      az aks update -n udacity-cluster -g acdnd-c4-project --attach-acr myacr202106
+      az aks update -n udacity-cluster -g acdnd-c4-project --attach-acr ACR-2024-DEC
       ```
 
 7. Now, deploy the images to the AKS cluster:
       ```bash
       # Get the ACR login server name
-      az acr show --name myacr202106 --query loginServer --output table
-      # Make sure that the manifest file *azure-vote-all-in-one-redis.yaml*, has `myacr202106.azurecr.io/azure-vote-front:v1` as the image path.  
+      az acr show --name ACR-2024-DEC --query loginServer --output table
+      # Make sure that the manifest file *azure-vote-all-in-one-redis.yaml*, has `ACR-2024-DEC.azurecr.io/azure-vote-front:v1` as the image path.  
       # Deploy the application. Run the command below from the parent directory where the *azure-vote-all-in-one-redis.yaml* file is present. 
       kubectl apply -f azure-vote-all-in-one-redis.yaml
       # Test the application at the External IP
@@ -319,8 +316,9 @@ The script above will take a few minutes to create VMSS and related resources. O
       # Check the status of each node
       kubectl get pods
       # In case you wish to change the image in ACR, you can redeploy using:
-      kubectl set image deployment azure-vote-front azure-vote-front=myacr202106.azurecr.io/azure-vote-front:v1      
+      kubectl set image deployment azure-vote-front azure-vote-front=ACR-2024-DEC.azurecr.io/azure-vote-front:v1      
       # Push your changes so far to the Github repo, preferably in the Deploy_to_AKS branch
+      
       ```
 
 8. **Troubleshoot** - If your application is not accessible on the External IP of the AKS cluster, you will have to look into the ACR web portal --> Repository --> azure-vote-front for failed events and logs. 
@@ -394,3 +392,5 @@ The script above will take a few minutes to create VMSS and related resources. O
 
 * [License](./LICENSE.md)
       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+

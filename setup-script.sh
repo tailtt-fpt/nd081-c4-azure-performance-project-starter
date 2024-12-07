@@ -57,6 +57,7 @@ echo "STEP 3 - Creating VM scale set $vmssName"
 az vmss create \
   --resource-group $resourceGroup \
   --name $vmssName \
+  --orchestration-mode Uniform \
   --image $osType \
   --vm-sku $vmSize \
   --nsg $nsgName \
