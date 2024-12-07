@@ -276,39 +276,38 @@ The script above will take a few minutes to create VMSS and related resources. O
       cd nd081-c4-azure-performance-project-starter
       # Assuming the acdnd-c4-project resource group is still avaiable with you
       chmod +x create-cluster.sh
-      # The script below will create an AKS cluster, Configure kubectl to connect to your Kubernetes cluster, and Verify the connection to your cluster
       ./create-cluster.sh
       ```
 
-6. Next, create a Container Registry in Azure to store the image, and AKS can later pull them during deployment to the AKS cluster. Feel free to change the ACR name in place of `myacr202106` below.
+6. Next, create a Container Registry in Azure to store the image, and AKS can later pull them during deployment to the AKS cluster. Feel free to change the ACR name in place of `acr2024dec` below.
       ```bash
       # Assuming the acdnd-c4-project resource group is still avaiable with you
       # Create a resource group
-      az group create --name acdnd-c4-project --location westus2
+      # az group create --name acdnd-c4-project --location westus2
       # ACR name should not have upper case letter
-      az acr create --resource-group acdnd-c4-project --name myacr202106 --sku Basic
+      az acr create --resource-group acdnd-c4-project --name acr2024dec --sku Basic
       # Log in to the ACR
-      az acr login --name myacr202106
+      az acr login --name acr2024dec
       # Get the ACR login server name
       # To use the azure-vote-front container image with ACR, the image needs to be tagged with the login server address of your registry. 
       # Find the login server address of your registry
-      az acr show --name myacr202106 --query loginServer --output table
+      az acr show --name acr2024dec --query loginServer --output table
       # Associate a tag to the local image. You can use a different tag (say v2, v3, v4, ....) everytime you edit the underlying image. 
-      docker tag azure-vote-front:v1 myacr202106.azurecr.io/azure-vote-front:v1
-      # Now you will see myacr202106.azurecr.io/azure-vote-front:v1 if you run docker images
+      docker tag azure-vote-front:v1 acr2024dec.azurecr.io/azure-vote-front:v1
+      # Now you will see acr2024dec.azurecr.io/azure-vote-front:v1 if you run docker images
       # Push the local registry to remote ACR
-      docker push myacr202106.azurecr.io/azure-vote-front:v1
+      docker push acr2024dec.azurecr.io/azure-vote-front:v1
       # Verify if you image is up in the cloud.
-      az acr repository list --name myacr202106 --output table
+      az acr repository list --name acr2024dec --output table
       # Associate the AKS cluster with the ACR repository
-      az aks update -n udacity-cluster -g acdnd-c4-project --attach-acr myacr202106
+      az aks update -n udacity-cluster -g acdnd-c4-project --attach-acr acr2024dec
       ```
 
 7. Now, deploy the images to the AKS cluster:
       ```bash
       # Get the ACR login server name
-      az acr show --name myacr202106 --query loginServer --output table
-      # Make sure that the manifest file *azure-vote-all-in-one-redis.yaml*, has `myacr202106.azurecr.io/azure-vote-front:v1` as the image path.  
+      az acr show --name acr2024dec --query loginServer --output table
+      # Make sure that the manifest file *azure-vote-all-in-one-redis.yaml*, has `acr2024dec.azurecr.io/azure-vote-front:v1` as the image path.  
       # Deploy the application. Run the command below from the parent directory where the *azure-vote-all-in-one-redis.yaml* file is present. 
       kubectl apply -f azure-vote-all-in-one-redis.yaml
       # Test the application at the External IP
@@ -319,7 +318,7 @@ The script above will take a few minutes to create VMSS and related resources. O
       # Check the status of each node
       kubectl get pods
       # In case you wish to change the image in ACR, you can redeploy using:
-      kubectl set image deployment azure-vote-front azure-vote-front=myacr202106.azurecr.io/azure-vote-front:v1      
+      kubectl set image deployment azure-vote-front azure-vote-front=acr2024dec.azurecr.io/azure-vote-front:v1
       # Push your changes so far to the Github repo, preferably in the Deploy_to_AKS branch
       ```
 
@@ -394,3 +393,71 @@ The script above will take a few minutes to create VMSS and related resources. O
 
 * [License](./LICENSE.md)
       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+# teminal 1
+az login
+
+chmod +x setup-script.sh
+   ./setup-script.sh
+
+## create app insight => get key connection
+## paste to code
+
+git add -A     
+git commit -m "Initial commit for Deploy_to_VMSS branch"
+git push --set-upstream  https://github.com/tailtt-fpt/nd081-c4-azure-performance-project-starter.git Deploy_to_VMSS
+
+# teminal 2
+
+az vmss list-instance-connection-info \
+      --resource-group acdnd-c4-project \
+      --name udacity-vmss 
+
+  "instance 0": "13.93.205.106:50000",
+  "instance 2": "13.93.205.106:50002"
+
+  ssh -p 50000 udacityadmin@13.93.205.106
+  ssh -p 50002 udacityadmin@13.93.205.106
+
+git clone https://github.com/tailtt-fpt/nd081-c4-azure-performance-project-starter.git
+
+cd nd081-c4-azure-performance-project-starter
+
+git checkout Deploy_to_VMSS
+
+sudo apt update
+  
+   python3 --version
+
+   sudo -H pip3 install --upgrade pip
+
+   wget https://download.redis.io/releases/redis-6.2.4.tar.gz
+
+   tar xzf redis-6.2.4.tar.gz
+
+   cd redis-6.2.4
+
+   make
+
+   redis-cli ping
+   
+   src/redis-server   
+
+   cd ..      
+   pip install -r requirements.txt
+
+   cd azure-vote/   
+
+   python3 main.py
+
+   ## scale vmss
+## go on vm and then create scenio
+ssh -p 50000 udacityadmin@13.93.205.106
+ssh -p 50002 udacityadmin@13.93.205.106
+
+sudo apt-get update
+sudo apt-get -y install stress
+sudo stress --cpu 10 --timeout 420 & 
+
