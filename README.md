@@ -341,7 +341,7 @@ The script above will take a few minutes to create VMSS and related resources. O
 ### Step 5 - Runbook
 
 1. Create an Azure Automation Account
-
+      auto-account-uda
 2. Create a Runbook—either using a script or the UI—that will remedy a problem.
 
 3. Create an alert that uses a runbook to remedy a problem.
@@ -457,7 +457,31 @@ sudo apt update
 ssh -p 50000 udacityadmin@13.93.205.106
 ssh -p 50002 udacityadmin@13.93.205.106
 
+## create stress for vmss
 sudo apt-get update
 sudo apt-get -y install stress
 sudo stress --cpu 10 --timeout 420 & 
 
+
+###### Runbook
+ # Replace placeholders with your values
+ $resourceGroup = 'acdnd-c4-project'
+ $vmssName = 'udacity-vmss'
+ $newVmCount = 4 # Desired number of VMs
+ $subscriptionId = 'UdacityDS - 08'
+
+ # Ensures you do not inherit an AzContext in your runbook
+ Disable-AzContextAutosave -Scope Process
+
+ # Connect to Azure with system-assigned managed identity
+ Connect-AzAccount -Identity
+
+ # set and store context
+ $AzureContext = Set-AzContext –SubscriptionId $subscriptionId
+
+ # Get current scale set
+ $vmss = Get-AzVmss -ResourceGroupName $resourceGroup -VMScaleSetName $vmssName
+
+ # Set and update the capacity of your scale set
+ $vmss.sku.capacity = $newVmCount
+ Update-AzVmss -ResourceGroupName $resourceGroup -Name $vmssName -VirtualMachineScaleSet $vmss -DefaultProfile $AzureContext
