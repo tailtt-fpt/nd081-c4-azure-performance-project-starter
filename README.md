@@ -415,11 +415,13 @@ az vmss list-instance-connection-info \
       --resource-group acdnd-c4-project \
       --name udacity-vmss 
 
-  "instance 0": "13.93.205.106:50000",
-  "instance 2": "13.93.205.106:50002"
+{
+  "instance 1": "13.91.164.229:50001",
+  "instance 2": "13.91.164.229:50002"
+}
 
-  ssh -p 50000 udacityadmin@13.93.205.106
-  ssh -p 50002 udacityadmin@13.93.205.106
+  ssh -p 50001 udacityadmin@13.91.164.229
+  ssh -p 50002 udacityadmin@13.91.164.229
 
 git clone https://github.com/tailtt-fpt/nd081-c4-azure-performance-project-starter.git
 
@@ -443,7 +445,7 @@ sudo apt update
 
    redis-cli ping
    
-   src/redis-server   
+   src/redis-server
 
    cd ..      
    pip install -r requirements.txt
@@ -454,8 +456,8 @@ sudo apt update
 
    ## scale vmss
 ## go on vm and then create scenio
-ssh -p 50000 udacityadmin@13.93.205.106
-ssh -p 50002 udacityadmin@13.93.205.106
+ssh -p 50001 udacityadmin@13.91.164.229
+ssh -p 50002 udacityadmin@13.91.164.229
 
 ## create stress for vmss
 sudo apt-get update
